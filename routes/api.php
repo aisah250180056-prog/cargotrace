@@ -12,7 +12,9 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // REST API Terproteksi Token Sanctum (Slide 12 & 13)
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {    // Tracking Endpoints Wajib (Slide 12)
+    Route::get('/shipments/{shipment}/tracking', [\App\Http\Controllers\TrackingEventController::class, 'index']);
+    Route::post('/shipments/{shipment}/tracking', [\App\Http\Controllers\TrackingEventController::class, 'store']);
     Route::get('/user', function (Request $request) {
         return response()->json($request->user());
     });
