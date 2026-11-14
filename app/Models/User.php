@@ -63,4 +63,27 @@ class User extends Authenticatable
     {
         return $this->role === 'customer';
     }
+    /**
+     * Relasi: 1 Customer memiliki banyak Shipment miliknya
+     */
+    public function shipments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Shipment::class, 'customer_id');
+    }
+
+    /**
+     * Relasi: 1 User (Operator/Admin) bisa mencatat banyak tracking events
+     */
+    public function trackingEvents(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(TrackingEvent::class, 'created_by');
+    }
+
+    /**
+     * Relasi: 1 User memiliki banyak notifikasi
+     */
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
 }
