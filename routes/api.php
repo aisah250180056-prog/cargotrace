@@ -13,6 +13,15 @@ Route::post('/login', [AuthController::class, 'login']);
 
 // REST API Terproteksi Token Sanctum (Slide 12 & 13)
 Route::middleware('auth:sanctum')->group(function () {  
+        // External Weather API Proxy Endpoint (Slide 09 & 12)
+    Route::get('/weather', function (Request $request, \App\Services\WeatherService $weatherService) {
+        $request->validate([
+            'lat' => ['required', 'numeric', 'between:-90,90'],
+            'lon' => ['required', 'numeric', 'between:-180,180'],
+        ]);
+        $data = $weatherService->getWeather((float) $request->lat, (float) $request->lon);
+        return response()->json($data ?? ['message' => 'Layanan cuaca sementara offline.']);
+    });
         // Exceptions Endpoints Wajib (Slide 12)
     Route::get('/shipments/{shipment}/exceptions', [\App\Http\Controllers\ShipmentExceptionController::class, 'index']);
     Route::post('/shipments/{shipment}/exceptions', [\App\Http\Controllers\ShipmentExceptionController::class, 'store']);

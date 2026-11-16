@@ -18,8 +18,9 @@ class ShipmentController extends Controller
      * Dependency Injection: Menghubungkan Service Layer ke Controller (Slide 15)
      */
     public function __construct(
-        protected ShipmentService $shipmentService
-    ) {}
+    protected ShipmentService $shipmentService,
+    protected \App\Services\WeatherService $weatherService
+) {}
 
     /**
      * Menampilkan daftar pengiriman (Slide 05, 10, 13)
@@ -117,26 +118,36 @@ class ShipmentController extends Controller
      * Menampilkan detail pengiriman, rute peta, dan riwayat tracking (Slide 07)
      */
     public function show(Request $request, Shipment $shipment)
-    {
-        // Pemeriksaan Hak Akses: Customer dilarang membuka ID kargo orang lain (HTTP 403)
-        Gate::authorize('view', $shipment);
+{
+    Gate::authorize('view', $shipment);
 
-        $shipment->load([
-            'customer',
-            'carrier',
-            'origin',
-            'destination',
-            'items',
-            'trackingEvents.creator',
-            'exceptions.logger',
+    $shipment->load([
+        'customer',
+        'carrier',
+        'origin',
+        'destination',
+        'items',
+        'trackingEvents.creator',
+        'exceptions.logger',
+    ]);
+
+    // Ambil koordinat posisi kapal terkini (atau pelabuhan asal jika belum ada tracking event)
+    $latestEvent = $shipment->latestTrackingEvent;
+    $lat = $latestEvent->latitude ?? $shipment->origin->latitude;
+    $lon = $latestEvent->longitude ?? $shipment->origin->longitude;
+
+    // Panggil External Weather API (Slide 09)
+    $weather = ($lat && $lon) ? $this->weatherService->getWeather((float) $lat, (float) $lon) : null;
+
+    if ($request->wantsJson()) {
+        return response()->json([
+            'shipment' => $shipment,
+            'weather'  => $weather,
         ]);
-
-        if ($request->wantsJson()) {
-            return response()->json($shipment);
-        }
-
-        return view('shipments.show', compact('shipment'));
     }
+
+    return view('shipments.show', compact('shipment', 'weather'));
+}
 
     /**
      * Memperbarui Status Pengiriman dengan Validasi State Machine (Slide 06)
