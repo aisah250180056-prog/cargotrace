@@ -20,7 +20,11 @@ Route::middleware('guest')->group(function () {
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
 // Rute yang Dilindungi Autentikasi (Semua Role: Admin, Operator, Customer)
-Route::middleware('auth')->group(function () {    // Tracking Events Timeline
+Route::middleware('auth')->group(function () { 
+        // Exception Management Routes
+    Route::get('/shipments/{shipment}/exceptions', [\App\Http\Controllers\ShipmentExceptionController::class, 'index'])->name('exceptions.index');
+    Route::post('/shipments/{shipment}/exceptions', [\App\Http\Controllers\ShipmentExceptionController::class, 'store'])->name('exceptions.store');
+    Route::patch('/exceptions/{exception}', [\App\Http\Controllers\ShipmentExceptionController::class, 'update'])->name('exceptions.update');   // Tracking Events Timeline
     Route::get('/shipments/{shipment}/tracking', [\App\Http\Controllers\TrackingEventController::class, 'index'])->name('tracking.index');
     Route::post('/shipments/{shipment}/tracking', [\App\Http\Controllers\TrackingEventController::class, 'store'])->name('tracking.store');
     // 1. Shipment Modules
